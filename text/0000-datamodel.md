@@ -1264,6 +1264,7 @@ type Prisma implements IDatabase, IMessageQueue {
 - [ ] Maybe rethink the "link table" concept
 - [ ] Values for enum types?
 - [x] Indices/Unique
+- [ ] Unnamed embeds
 - [ ] If we were a little more radical with the syntax, could we create something much better?
 
 # Notes
