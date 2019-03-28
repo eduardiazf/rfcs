@@ -360,3 +360,4 @@ Both use-cases of hooks and conflicts need to be properly documented.
 - [ ] Spec out how migration "hooks" are working (e.g. `before.up.sql`) as it's depending on individual connectors
 - [ ] Spec out CLI output of each migration related command
 - [ ] 3 migration modes (1. delete all data, 2. keep data + downtime, 3. keep data + zero downtime)
+- [ ] Transaction behavior (also when running scripts)
