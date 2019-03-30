@@ -387,6 +387,7 @@ prisma.users({
 - [ ] Better `raw` integration with query builders like Knex
 - [ ] Do we need `$` prefix (e.g. `$withPageInfo`)
 - [ ] Silent mutations [prisma/prisma#4075](https://github.com/prisma/prisma/issues/4075)
+- [ ] Consider consistency and isolation levels
 
 # Future topics
 
