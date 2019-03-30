@@ -98,7 +98,7 @@ async function main() {
     .findOne('bobs-id')
     .posts({ first: 50 })
 
-  // Query Object API
+  // Select API
   const userWithPostsAndFriends: DynamicResult1 = await prisma.users.findOne({
     where: 'bobs-id',
     select: {
@@ -213,7 +213,7 @@ async function main() {
   // Explicit $exec terminator
   const usersQueryWithTimeout = await prisma.users.$exec({ timeout: 1000 })
 
-  // Top level $query API
+  // Top level query API
   const nestedResult = await prisma.query({
     users: {
       first: 100,
