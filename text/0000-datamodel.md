@@ -1254,6 +1254,7 @@ type Prisma implements IDatabase, IMessageQueue {
 
 # Open Questions
 
+- [ ] Support for models spread across multiple datasources ("compound models")
 - [ ] Uppercase vs lowercase for (scalar) type names
 - [x] New primitive types (JSON, spatial)
 - [ ] @updatedAt vs DateTime(behavior: UPDATED_AT)
