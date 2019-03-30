@@ -280,4 +280,5 @@ The usage of generators has already great resources. The part, that needs more a
 - [ ] Output location for generated files should be in `node_modules` (`$GOPATH` or similar) by default
 - [ ] Should we have configuration for casing? For example, allow snake_casing in the datamodel but render it as CamelCase in the client.
 - [ ] Rethink embedding credentials during generation.
+- [ ] Raw DB access should be disabled by default
 
