@@ -16,7 +16,7 @@
 
 The example code below assumes the following datamodel:
 
-```
+```groovy
 model Post {
   id: ID
   title: String
