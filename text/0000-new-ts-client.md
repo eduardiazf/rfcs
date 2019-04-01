@@ -313,15 +313,26 @@ TODO
 
 TODO
 
+- Partial `raw`
+- Full query execute
+- Named queries
+
 ## Batching
 
 TODO:
 
 - Add option to not return data
+- Return iterator with update events
 
 ## Pagination
 
 TODO
+
+## Life-cycle hooks
+
+TODO:
+
+- 2 (non-exlusive) approaches: Middleware (blocking) + Events (non-blocking)
 
 ## API shortcuts
 
@@ -366,16 +377,18 @@ prisma.users({
 
 - [ ] Connection management when used with embededded query engine
 - [ ] Non-CRUD API operations
-- [ ] Add support for `AS OF TIMESTAMP` queries (see e.g. [Oracle](https://docs.oracle.com/cd/B19306_01/backup.102/b14192/flashptr002.htm))
+- [ ] Add support for revisioning API
 - [ ] Type mapping and static field preselection (see [comment in #4](https://github.com/prisma/rfcs/pull/4#issuecomment-471202364))
 - [ ] (Type-safe) raw field selection
 - [ ] API shortcuts (`where`, `aggregate`, `select`, ...)
 - [ ] Rethink generated type name scheme (incl. pluralization)
 - [ ] Real-time API (subscriptions/live queries)
-- [ ] Unit of work API (see #5)
+- [ ] Unit of work API (see [#5](https://github.com/prisma/rfcs/pull/#5))
 - [ ] Life-cycle hooks
 - [ ] `exists` API
-- [ ] API for atomic operations
+- [ ] Operation Expressions
+  - [ ] API for atomic operations
+  - [ ] Update(many) API to use existing values
 - [ ] API composition
   - [ ] Query fragments similar to Fauna
   - [ ] Explore idea of nested "thenable" API
@@ -383,11 +396,11 @@ prisma.users({
   - [ ] `findAll` vs `findMany`
   - [ ] Fluent API to build filters / query fragments
 - [ ] Double check cursor, streaming and batching API
-- [ ] Update(many) API to use existing values
 - [ ] Better `raw` integration with query builders like Knex
 - [ ] Do we need `$` prefix (e.g. `$withPageInfo`)
 - [ ] Silent mutations [prisma/prisma#4075](https://github.com/prisma/prisma/issues/4075)
 - [ ] Consider consistency and isolation levels
+- [ ] Data locality
 
 # Future topics
 
