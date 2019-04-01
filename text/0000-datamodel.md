@@ -1468,6 +1468,7 @@ type Prisma implements IDatabase, IMessageQueue {
 
 # Open Questions
 
+- [ ] Support for models spread across multiple datasources ("compound models")
 - [ ] Uppercase vs lowercase for (scalar) type names
 - [x] New primitive types (JSON, spatial)
 - [ ] @updatedAt vs DateTime(behavior: UPDATED_AT)
@@ -1478,6 +1479,7 @@ type Prisma implements IDatabase, IMessageQueue {
 - [ ] Maybe rethink the "link table" concept
 - [ ] Values for enum types?
 - [x] Indices/Unique
+- [ ] Unnamed embeds
 - [ ] If we were a little more radical with the syntax, could we create something much better?
 
 # Notes
