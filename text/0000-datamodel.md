@@ -65,30 +65,17 @@ model PostToCategory {
 
 # Motivation
 
-
-
 # Detailed design
-
-
 
 # Drawbacks
 
-
-
 # Alternatives
-
-
 
 # Adoption strategy
 
-
-
 # How we teach this
 
-
-
 # Unresolved questions
-
 
 ===
 
@@ -104,7 +91,6 @@ Prisma provides a set of core primitives:
 - Constraints
 - ID / Primary Key
 
-
 ## Connector specific primitives
 
 Connectors can additionally provide primitives specific to their underlying datastore
@@ -118,18 +104,18 @@ Connectors can additionally provide primitives specific to their underlying data
 
 ## Motivation for core/connector split
 
-Prisma core provides a set of data modelling primitives that are supported by most connectors. 
+Prisma core provides a set of data modelling primitives that are supported by most connectors.
 
-Connectors enable Prisma to work with a specific datastore. This can be a database, a file format or even a web service. 
+Connectors enable Prisma to work with a specific datastore. This can be a database, a file format or even a web service.
 
 - The primary job of a connector is to translate highher level Prisma concepts to lower level operations on the storage engine.
-- Secondary, connectors enable the Prisma user to take full advantage of the underlying storage engine by exposing performance tuning options and extra functionality that can not be accessed through the core Prisma primitives. 
+- Secondary, connectors enable the Prisma user to take full advantage of the underlying storage engine by exposing performance tuning options and extra functionality that can not be accessed through the core Prisma primitives.
 
 ### Types (String, Int, Float etc)
 
 Prisma specifies a common set of primitive types. Connectors have some flexibility in how they implement the type, but there are minimum requirements that must be satisfied.
 
-This makes it possible to use diferent connectors in different environments. 
+This makes it possible to use diferent connectors in different environments.
 
 ### Type Declarations (model, embedded, enum)
 
@@ -173,7 +159,7 @@ Storage engines vary wildly, so it is not possible to have a generic interface f
 
 ### Custom Primitive Types and Custom Complex Types
 
-Connectors can introduce primitive or complex types. These types can be used the same way as a type alias or complex type (model,  embedded or enum) declared directly in the datamodel file.
+Connectors can introduce primitive or complex types. These types can be used the same way as a type alias or complex type (model, embedded or enum) declared directly in the datamodel file.
 
 ### Indexes
 
@@ -181,8 +167,8 @@ Indexes are storage engine specific and mostly relevant for performance configur
 
 There are two exceptions where indexes intersect with data modelling:
 
-- Most storage engines implement the *unique constraint* as an index. Unique constraint is provided by Prisma core, and the connector can choose to create only a single index if both a index and unique constraint is present on a single field in the datamodel.
-- The concept of a *primary key* is provided by Prisma Core (`@id`). Many storage engines implement the primary key using a special index (sometimes called clustered index or primary index) that organises the data on disk by that field, even if no index is specified separately. These connectors will allow you to configure the index used for the primary key separately using the connector specific index configuration.
+- Most storage engines implement the _unique constraint_ as an index. Unique constraint is provided by Prisma core, and the connector can choose to create only a single index if both a index and unique constraint is present on a single field in the datamodel.
+- The concept of a _primary key_ is provided by Prisma Core (`@id`). Many storage engines implement the primary key using a special index (sometimes called clustered index or primary index) that organises the data on disk by that field, even if no index is specified separately. These connectors will allow you to configure the index used for the primary key separately using the connector specific index configuration.
 
 # Model
 
@@ -199,8 +185,6 @@ model User {
   name: string
 }
 ```
-
-
 
 # Primitive types
 
@@ -258,7 +242,6 @@ Prisma has only one `String` type that maps to the largest available text repres
 
 Type specification can be used to specify a smaller storage type for performance. On SQL it is common to use `varchar(128)`.
 
-
 ### Binary
 
 > Task:
@@ -269,20 +252,19 @@ Type specification can be used to specify a smaller storage type for performance
 | :------ | ----------------------- | -------------- | ------- | -------- |
 | Binary  | Binary, VarBinary, Blob | Binary         | binData | bytea    |
 
-In practice, a binary type is a string type without collation. 
+In practice, a binary type is a string type without collation.
 
 ### JSON
 
-> Note: SQL connectors will implement Embedded types using JSON columns. Embedded types are different from JSON fields in that they have a schema that is enforced by Prisma on write 
+> Note: SQL connectors will implement Embedded types using JSON columns. Embedded types are different from JSON fields in that they have a schema that is enforced by Prisma on write
 
 JSON is treated as a schema-less JSON value. Prisma validates that inserted values are well-formed JSON.
 
 > TASK:
-> 
+>
 > We should support generic JSON manipulation, ideally similar to the Mongo API. It should work the same across all connectors.
 > We should support indexing
 > Consider how explicit null vs not even in the document is handled
-
 
 | GraphQL | MySQL | Elastic Search | MongoDB | PostgreS |
 | :------ | ----- | -------------- | ------- | -------- |
@@ -308,17 +290,16 @@ Mongo and Elastic does not natively support `Date`. Prisma will simply map to Da
 
 Mongo and Elastic does not support `Time`. Prisma will simply map to Int and store a millisecond offset from midnight.
 
-
 > Note: While Interval and Duration might be useful, Prisma does not specify these and individual connectors are free to implement this as needed
 
 ### Spatial Types
 
 Sptial data types only make sense if they are augmented with proper operations, like intersection tests or area calculation. PostGIS has some [nice documentation](https://postgis.net/docs/manual-2.5/using_postgis_dbmanagement.html#PostGIS_GeographyVSGeometry) which can serve as a starting point.
 
-For spatial types, two conventions are meaningful: 
+For spatial types, two conventions are meaningful:
 
-* Geographic coordinates (lat, lon)
-* Geometric coordinates (x, y)
+- Geographic coordinates (lat, lon)
+- Geometric coordinates (x, y)
 
 | Prisma  | MySQL      | Elastic Search      | MongoDB    | PostgreS   |
 | :------ | ---------- | ------------------- | ---------- | ---------- |
@@ -349,9 +330,9 @@ enum SomeEnum {
 }
 ```
 
-| Prisma  | MySQL      | Elastic Search      | MongoDB    | PostgreS   |
-| :------ | ---------- | ------------------- | ---------- | ---------- |
-| Enum    | ENUM       | text                | String     | ENUM      |
+| Prisma | MySQL | Elastic Search | MongoDB | PostgreS |
+| :----- | ----- | -------------- | ------- | -------- |
+| Enum   | ENUM  | text           | String  | ENUM     |
 
 > Prisma will store enums as strings containing the name of the enum value. In the future we could add a feature to specify an int representing the enum value similar to how protobuf specifies the order of fields. This new feature will be backwards compatible:
 
@@ -364,7 +345,7 @@ enum SomeEnum {
 
 # Type specification
 
-Prismas primitive types are implemented by all connectors. As such, they are often too coarce to express the full power of a connectors type system. It is possible to specify the exact type of a storage engine using type specification. 
+Prismas primitive types are implemented by all connectors. As such, they are often too coarce to express the full power of a connectors type system. It is possible to specify the exact type of a storage engine using type specification.
 A type specification is always scoped to a specific connector. If the datamodel is used with any other connector, it is ignored. It is possible to provide type specification for multiple different connectors in a single datamodel.
 
 ```groovy
@@ -408,7 +389,7 @@ model User {
 ```
 
 > Task
-> 
+>
 > Decide syntax above
 
 # Custom primitive types
@@ -477,7 +458,6 @@ type UserSettingBitmap = model @embeded {
 >
 > This needs to be mapped out in much greater detail
 
-
 # Directives
 
 ### Directive List
@@ -486,21 +466,21 @@ type UserSettingBitmap = model @embeded {
 
 #### Type Level
 
-1. `@db` -  to map fields or types to underlying db objects with different names
+1. `@db` - to map fields or types to underlying db objects with different names
 2. `@plural` - to force a certain plural for client schema generation
-3. `@linkTable `  - to mark a table as intermediate table for relations
+3. `@linkTable` - to mark a table as intermediate table for relations
 4. `@embedded` - to mark a type as embedded, e.g. embedded into a field of another type when stored
 5. `@indexes` - to declare indexes on a type
-6. `@discriminator `  - to declare a discriminator on a polymorphic type, e.g. a value to distinguish it from other types
+6. `@discriminator` - to declare a discriminator on a polymorphic type, e.g. a value to distinguish it from other types
 
 #### Field Level
 
 1. `@id` - marks the primary key/id
-2. `@createdAt`  - marks a field as the special createdAt field
+2. `@createdAt` - marks a field as the special createdAt field
 3. `@updatedAt` - marks a field as the special updatedAt field
-4. `@default` -  sets the default value of a field
+4. `@default` - sets the default value of a field
 5. `@db` - see above
-6. `@scalarList` 
+6. `@scalarList`
 7. `@constraint` - for single field db constraints
 8. `@sequence`
 9. `@immutable`
@@ -510,8 +490,6 @@ type UserSettingBitmap = model @embeded {
 #### Interface Level
 
 1. `@inheritance`
-
-
 
 ### Placement
 
@@ -532,9 +510,9 @@ model User {
 
 > Task:
 >
-> 1) Map out all directives, and where it would be most intuitive to place it.
+> 1. Map out all directives, and where it would be most intuitive to place it.
 >
-> 2) Consider if some directives would be better described with alternative syntax
+> 2. Consider if some directives would be better described with alternative syntax
 
 # Sequence/Generators
 
@@ -562,7 +540,7 @@ Custom sequences which only support increments are kind of useless, so we could 
 
 ### Pre-Defined Generators
 
-For a start, it might be better to just allow some pre-defined generators: 
+For a start, it might be better to just allow some pre-defined generators:
 
 `uuid()` - generates a fresh UUID
 
@@ -578,13 +556,13 @@ There are three kinds of relations: 1-1, 1-m and m-n. In relational databases 1-
 
 Prisma core provides explicit support for all 3 relation types and connectors must ensure that their guarantees are upheld:
 
-- *1-1* The return value on both sides is a nullable single value. Prisma prevents accidentally storing multiple records in the relation. This is an improvement over the standard implementation in relational databases that model 1-1 and 1-m relations the same, relying on application code to uphold this constraint.
-- *1-m* The return value on one side is a nullable single value, on the other side a list that might be empty.
-- *m-n* The return value on both sides is a list that might be empty. This is an improvement over the standard implementation in relational databases that require the application developer to deal with implementation details such as an intermediate table / join table. In Prisma, each connector will implement this concept in the way that is most efficient on the given storage engine and expose an API that hides the implementation details.
+- _1-1_ The return value on both sides is a nullable single value. Prisma prevents accidentally storing multiple records in the relation. This is an improvement over the standard implementation in relational databases that model 1-1 and 1-m relations the same, relying on application code to uphold this constraint.
+- _1-m_ The return value on one side is a nullable single value, on the other side a list that might be empty.
+- _m-n_ The return value on both sides is a list that might be empty. This is an improvement over the standard implementation in relational databases that require the application developer to deal with implementation details such as an intermediate table / join table. In Prisma, each connector will implement this concept in the way that is most efficient on the given storage engine and expose an API that hides the implementation details.
 
 ### 1-1
 
-A writer can have exactly 1 blog and a blog has a single author:
+A writer can have exactly 1 blog and a blog can have a single author:
 
 ```groovy
 model Blog {
@@ -600,16 +578,82 @@ model Writer {
 
 Connectors for relational databases will implement this as two tables with a single relation column:
 
-
-| **Blog** | |
-|----------|-|
-| id | authorId |
+| **Blog** |          |
+| -------- | -------- |
+| id       | authorId |
 
 | **Writer** |
-|------------|
-| id |
+| ---------- |
+| id         |
 
-The relational database is unable to model thge constraint that a Writer can only be related to a single Blog. This constraint is upheld by Prisma and reflected in the exposed API.
+**required relations**
+
+Either side in a 1-1 relation can be made required:
+
+```groovy
+model Blog {
+  id: ID! @id
+  author: Writer!
+}
+
+model Writer {
+  id: ID! @id
+  blog: Blog
+}
+```
+
+```groovy
+model Blog {
+  id: ID! @id
+  author: Writer
+}
+
+model Writer {
+  id: ID! @id
+  blog: Blog!
+}
+```
+
+```groovy
+model Blog {
+  id: ID! @id
+  author: Writer!
+}
+
+model Writer {
+  id: ID! @id
+  blog: Blog!
+}
+```
+
+**Implicit relation field**
+
+It is possible to specify only one relation field:
+
+```groovy
+model Blog {
+  id: ID! @id
+  author: Writer
+}
+
+model Writer {
+  id: ID! @id
+}
+```
+
+This will be interpreted as if there was an implicit optional relation field on `Writer` named after the `Blog` model:
+
+```groovy
+model Blog {
+  id: ID! @id
+  author: Writer
+}
+
+model Writer {
+  id: ID! @id
+  blog: Blog
+}
+```
 
 ### 1-m
 
@@ -629,16 +673,64 @@ model Writer {
 
 Connectors for relational databases will implement this as two tables with a single relation column, exactly like the 1-1 relation:
 
-
-| **Blog** | |
-|----------|-|
-| id | authorId |
+| **Blog** |          |
+| -------- | -------- |
+| id       | authorId |
 
 | **Writer** |
-|------------|
-| id |
+| ---------- |
+| id         |
 
 The implementation in the relational database matches the 1-m semantics, and these are reflected in the exposed API.
+
+**required relations**
+
+The single element side in a 1-m relation can be marked required:
+
+```groovy
+model Blog {
+  id: ID! @id
+  author: Writer!
+}
+
+model Writer {
+  id: ID! @id
+  blog: [Blog]
+}
+```
+
+The many field will either be an empty list or a non-empty list. It is not possible to mark it as required.
+
+**Implicit relation field**
+
+It is possible to specify only one relation field:
+
+```groovy
+model Blog {
+  id: ID! @id
+}
+
+model Writer {
+  id: ID! @id
+  blogs: [Blog]
+}
+```
+
+This will be interpreted as if there was an implicit optional single item relation field on `Blog` named after the `Writer` model:
+
+```groovy
+model Blog {
+  id: ID! @id
+  author: Writer
+}
+
+model Writer {
+  id: ID! @id
+  blogs: [Blog]
+}
+```
+
+Doing it the other way would not work as it would result in a 1-1 relation.
 
 ### m-n
 
@@ -654,16 +746,111 @@ model Writer {
   id: ID! @id
   blogs: [Blog]
 }
-
-relation BlogToWriter {
-  blog: Blog!
-  writer: Writer!
-  becameWriterOn: DateTime!
-}
 ```
 
 Connectors for relational databases will implement this as two data tables and a single join table:
 
+| **Blog** |
+| -------- |
+| id       |
+
+| **Writer** |
+| ---------- |
+| id         |
+
+| **\_BlogToWriter** |          |                |
+| ------------------ | -------- | -------------- |
+| blogId             | writerId | becameWriterOn |
+
+Relations using a join table feel exactly like any other relation. The generated client API is identical to that for the many side of a 1-m relation.
+
+**required relations**
+
+m-n relations do not support the required constraint
+
+**Implicit relation field**
+
+m-n relations do not support an implicit relation field
+
+### Explicit join model
+
+The `1-1`, `1-m` and `m-n` relations are high-level constructs provided by Prisma and implemented by most connectors. Especially the `m-n` relation construct provided by Prisma selects a set of compromises that might not be appropriate for your case. You can gain more control over the implementation by using a concept familiar to users of relational databases: The join table. A flexible version of the `m-n` relations can be implemented using an extra model that acts as the join table and two `1-m` relations.
+
+This data model:
+
+```groovy
+model Blog {
+  id: ID! @id
+  authors: [Writer]
+}
+
+model Writer {
+  id: ID! @id
+  blogs: [Blog]
+}
+```
+
+Can be represented like this:
+
+```groovy
+model Blog {
+  id: ID! @id
+  authors: [_BlogToWriter]
+}
+
+model Writer {
+  id: ID! @id
+  blogs: [_BlogToWriter]
+}
+
+model _BlogToWriter {
+  author: Author!
+  blog: Blog!
+}
+```
+
+These Datamodels will map to the same database schema
+
+| **Blog** |
+| -------- |
+| id       |
+
+| **Writer** |
+| ---------- |
+| id         |
+
+| **_BlogToWriter** |          |
+| ------------------ | -------- |
+| blogId             | writerId |
+
+But the generated client will be different in the following ways:
+
+- There will be a new top-level model `_BlogToWriter`, which can be accessed in all the normal ways, including a query like this: `prisma._BlogToWriters.findAll()`
+- Nested mutations will include an extra level of nesting: `prisma.writers.create({ id: 'a', blogs: { create: [{ blog: { id: "b" } }] } })`
+- Following a relation will require traversing an extra step: `prisma.writers.findAll().blogs().blog()`
+- Filtering by a related value will require an extra step: `prisma.writers.findAll({ where: { blogs_all: { blog: { id_ne: "abba" }}}})`
+
+**Extra data on the join model**
+
+When the `m-n` relation is modeled with a explicit join model, it is possible to add extra fields on that model:
+
+```groovy
+model Blog {
+  id: ID! @id
+  authors: [_BlogToWriter]
+}
+
+model Writer {
+  id: ID! @id
+  blogs: [_BlogToWriter]
+}
+
+model _BlogToWriter {
+  becameWriterOn: DateTime!
+  author: Author!
+  blog: Blog!
+}
+```
 
 | **Blog** |
 |----------|
@@ -673,11 +860,126 @@ Connectors for relational databases will implement this as two data tables and a
 |------------|
 | id |
 
-|**BlogToWriter** | | |
+|**_BlogToWriter** | | |
 |-----------------|-|-|
 | blogId | writerId | becameWriterOn |
 
-Relations using a join table feel exactly like any other relation. Additionally, any extra information in the join table can be written, read and used to filter in a query:
+The extra field can be accessed as you would expect:
+
+- On the top-level model `_BlogToWriter`: `(await prisma._BlogToWriters.findAll())[0].becameWriterOn`
+- In nested mutations: `prisma.writers.create({ id: 'a', blogs: { create: [{ blog: { id: "b" }, becameWriterOn: "2018" }] } })`
+- In relation filters: `prisma.writers.findAll({ where: { blogs_all: { blog: { id_ne: "abba" }, becameWriterOn_gt: "2017"}}})`
+
+### Ambiguous Relations
+
+If there are more than one relation between two types, the relation must be named:
+
+```groovy
+model Blog {
+  id: ID! @id
+  author: Writer @relation(name: "blogAuthor")
+  sunscribers: [Writer] @relation(name: "blogSubscribers")
+}
+
+model Writer {
+  id: ID! @id
+  authorOf: [Blog] @relation(name: "blogAuthor")
+  subscribedTo: [Blog] @relation(name: "blogSubscribers")
+
+}
+```
+
+### Cascading Deletes
+
+With Cascading Deletes you can ensure that related data is automatically cleaned up when a record is deleted. In general, when there is a parent-child relationship, Cascading Deletes can be used to automatically delete the child.
+
+There are 3 options:
+
+- `CASCADE`: Delete all child records
+- `RESTRICT`: Prevent deleting a parent record when there are child records
+- `SET_NULL` (default): Break the relation, but leave child records alone
+
+**1-1**
+
+Cascading can be enabled on either side, but not both:
+
+```groovy
+model Blog {
+  id: ID! @id
+  author: Writer @relation(onDelete: CASCADE)
+}
+
+model Writer {
+  id: ID! @id
+  blog: Blog
+}
+```
+
+```groovy
+model Blog {
+  id: ID! @id
+  author: Writer
+}
+
+model Writer {
+  id: ID! @id
+  blog: Blog! @relation(onDelete: CASCADE)
+}
+```
+
+This would return an error:
+
+```groovy
+model Blog {
+  id: ID! @id
+  author: Writer! @relation(onDelete: CASCADE)
+}
+
+model Writer {
+  id: ID! @id
+  blog: Blog! @relation(onDelete: CASCADE)
+}
+```
+
+**1-m**
+
+Cascading can be enabled on the parent side only:
+
+```groovy
+model Blog {
+  id: ID! @id
+  author: Writer
+}
+
+model Writer {
+  id: ID! @id
+  blogs: Blog! @relation(onDelete: CASCADE)
+}
+```
+
+This would return an error:
+
+```groovy
+model Blog {
+  id: ID! @id
+  author: Writer! @relation(onDelete: CASCADE)
+}
+
+model Writer {
+  id: ID! @id
+  blogs: Blog!
+}
+```
+
+**m-n**
+
+### Edge Relation
+
+> Note: The Edge Relation part of the spec is additive and will not be part of the initial release of Prisma 2
+> Note: This is only a draft
+
+The edge relation concept comes from property graphs, implemented in systems such as Neo4j and ArangoDB. An edge connects two nodes in the graph and can have extra properties. The Edge Relation extends the Prisma API to handle this concept without the use of a full model to represent the edge.
+
 
 **Implementation in wire protocol**
 
@@ -732,44 +1034,6 @@ const writers: Writer[] = await prisma.writers
   .findAll({ where: { blogs_all: { data: {id_ne: "abba" } relation: { becameWriterOn_gt: "2018" } } } }) // assume this is possible with discriminated union
 ```
 
-**ALTERNATIVE: Implementation in TS client if we don't have a special relation construct**
-
-```groovy
-model Blog {
-  id: ID! @id
-  authors: [BlogToWriter]
-}
-
-model Writer {
-  id: ID! @id
-  blogs: [BlogToWriter]
-}
-
-model BlogToWriter { # This is a normal model
-  blog: Blog!
-  writer: Writer!
-  becameWriterOn: DateTime!
-}
-```
-
-```typescript
-// Inserting relation data
-
-prisma.writers.create({ id: 'a', blogs: { create: [{ blog: { id: "b" }, becameWriterOn: "${now()}" }] } })
-
-// Reading relation data
-
-const writersWithBlogsRelationData: WriterWithBlogsWithBlog[] = await prisma.writers
-  .findAll()
-  .blogs()
-  .blog()
-
-// Filtering by relation data
-
-const writers: Writer[] = await prisma.writers
-  .findAll({ where: { blogs_all: { blog: { id_ne: "abba" },  becameWriterOn_gt: "2018" } } })
-```
-
 ### Aggregations
 
 > NOTE: this section is an aside examining the appliccability of the above API design to aggregations
@@ -806,54 +1070,6 @@ const writers: Writer[] = await prisma.writers
   .findAll({ where: { blogs_all: { id_ne: "abba" }, blogs_relation_aggregate: { becameWriterOn_avg_gt: "2018"} } })
 ```
 
- !!! END
-
-As with Prisma, N:M relations are linked under the hood. For object DBs, we would use an array of FKs. For relational DBs, a link table is used. This table is usually hidden. 
-
-Sometimes a link table should be visible or is explicitly desired for a 1:n or 1:1 relation. We have two ways to resolve this: 
-
-### Using a Directive
-
-Prisma Datamodel V2 specifies a `@linkTable` directive, that specifies the link table explicitely: 
-
-```groovy
-type Blog {
-  id: ID! @id
-  posts: [Post] @relation(name: "BlogsToPosts")
-}
-
-type Post {
-  id: ID! @id
-  blogs: [Blog]
-}
-
-type BlogsToPosts @linkTable {
-   blog: Blog!
-   post: Post!
-}
-```
-
-### Modeling as own entity
-
-Link tables can also be modeled as their own entities. This is the standard for relational models.
-
-```groovy
-type Blog {
-  id: ID! @id
-  posts: [BlogToPosts!]!
-}
-
-type Post {
-  id: ID! @id
-  blogs: [BlogToPosts!]!
-}
-
-type BlogsToPosts {
-   blog: Blog!
-   post: Post!
-}
-```
-
 # Index
 
 SDL limits us to 1 instance of a specific directive, forcing us to add extra syntax:
@@ -876,7 +1092,7 @@ For MDL, we can express indices via other meachnism:
 
 ### Field Groups
 
-Could introduce the concept of column groups, and allow indices on them: 
+Could introduce the concept of column groups, and allow indices on them:
 
 ```groovy
 type Post {
@@ -904,7 +1120,7 @@ type Post {
 }
 ```
 
-Pro: 
+Pro:
 
 Con: Counter-Intuitive to read (is that an embedded type?), overlapping indices not possible, need to group fields in index together.
 
@@ -981,7 +1197,7 @@ Con: Declaration not "inside" model
 
 ## Special Search Index
 
-Full text/phrase/spatial search in its simplest form can be reduced to providing an index. For this, an optional `type` argument could be added to indices, to represent this indices. 
+Full text/phrase/spatial search in its simplest form can be reduced to providing an index. For this, an optional `type` argument could be added to indices, to represent this indices.
 
 ```groovy
 type Post {
@@ -1020,24 +1236,24 @@ These indices would, when created, add extra filter fields to the schema.
 
 For the fuzzy text index, it would be useful to also expose an order by field which would allow to order by rank of the match.
 
-> Task: 
+> Task:
 >
 > Find further special inidices
 > Map out all index tuning settings and create common capability groupings between DBs
 
 # Ineritance
 
-Inheritance in this context describes the concept of sharing common fields between types that are conceptually related. While inheritance is well discussed and researched on a language level, we have to tie these concepts closely to database models and to introspection. 
+Inheritance in this context describes the concept of sharing common fields between types that are conceptually related. While inheritance is well discussed and researched on a language level, we have to tie these concepts closely to database models and to introspection.
 
 > Polymorphic relations are a powerful concept and should be discussed here seperately.
 
 This concept is not to be confused with polymorphic relations, which is described in the [datamodel v2 specification](https://github.com/prisma/prisma/issues/3407). The polymorphic relation discussion is recommended reading for this topic as well.
 
-Also, inheritance has to be distinguished from **interfaces**. The concept is similar, but interfaces are not backed by the databases, and any model can implement multiple interfaces. 
+Also, inheritance has to be distinguished from **interfaces**. The concept is similar, but interfaces are not backed by the databases, and any model can implement multiple interfaces.
 
 > Tasks:
 >
-> What about union types? 
+> What about union types?
 >
 > What are the precise implications on data layout when inheritance is used?
 >
@@ -1045,17 +1261,17 @@ Also, inheritance has to be distinguished from **interfaces**. The concept is si
 
 ## Inheritance in Prisma
 
-In the concept of prisma **inheritance** allows extending a type that is backed by the database by **inheriting** from it. 
+In the concept of prisma **inheritance** allows extending a type that is backed by the database by **inheriting** from it.
 
 Conventional **abstract** types behave like conventional types, but cannot be created. We have to take care of existing data in the database correctly.
 
 Inheritance in prisma respects **all properties** of base fields, including:
 
-* Default Values
-* Indices
-* Types
-* Field Names
-* Constraints
+- Default Values
+- Indices
+- Types
+- Field Names
+- Constraints
 
 Inheritance in the datamodel is declared by an `extends` clause:
 
@@ -1076,7 +1292,7 @@ type Pet extends LivingBeing {
 
 type Cat extends Pet {
     likesFish: Boolean!
-} 
+}
 
 type Dog extends Pet {
     likesFrisbee: Boolean!
@@ -1085,19 +1301,19 @@ type Dog extends Pet {
 
 In the example above, `Dog` would inherit all fields from `Pet` and `LivingBeing`without explicitly declaring them.
 
-When a prisma query for base type happens, all super types are taken into consideration. In other words, when quering all Pets, all cats and dogs are returned as well. 
+When a prisma query for base type happens, all super types are taken into consideration. In other words, when quering all Pets, all cats and dogs are returned as well.
 
 ## Inheritance in Relational DBs
 
-Via **single table inheritance**: We simply have all base field and all fields from superclasses in the same table. 
+Via **single table inheritance**: We simply have all base field and all fields from superclasses in the same table.
 
-Drawbacks: Impossible to enforce not null, field names collide. A  `type` collumn will be mandatory.
+Drawbacks: Impossible to enforce not null, field names collide. A `type` collumn will be mandatory.
 
-Via **concrete table inheritance**: We have a seperate table for each subtype, copying base fields. 
+Via **concrete table inheritance**: We have a seperate table for each subtype, copying base fields.
 
-Drawbacks:  No clear distinction between base and sub fields. It is hard to query all for the base type. Auto incrementing PKs on the base type are hard to achieve.
+Drawbacks: No clear distinction between base and sub fields. It is hard to query all for the base type. Auto incrementing PKs on the base type are hard to achieve.
 
-Via **class table inheritance**/**join table inhertiance**: We create a base table for the base class and specific tables for subtypes, which are joined. 
+Via **class table inheritance**/**join table inhertiance**: We create a base table for the base class and specific tables for subtypes, which are joined.
 
 Drawback: Performance (Feedback from Marcus)
 
@@ -1107,11 +1323,11 @@ Drawback: Performance (Feedback from Marcus)
 
 Prisma always uses the **join table form** for relational DBs, as it poses the least drawbacks. Optionally, prisma could offer support for the other inheritance concepts to allow easier adoption of existing databases.
 
-When introspecting, inheritance is never discovered, as there are no hints we could salvage for detecting inheritance. However, a user can always declare an inheritance in an existing datamodel to match the database. 
+When introspecting, inheritance is never discovered, as there are no hints we could salvage for detecting inheritance. However, a user can always declare an inheritance in an existing datamodel to match the database.
 
 > Marcus pointed out that it might make sense to limit or at least discourage to deep inheritance, since it can lead to poor performance.
 
-> Task: 
+> Task:
 >
 > Map out the MDL syntax for supporting all inheritance types
 
@@ -1123,23 +1339,23 @@ On Top Level, Document Databases can theoretically leverage the same approaches 
 
 Prisma always stores super and sub types in the same collection, with a type tag.
 
-Introspection does not identify inheritance (in theory, it could with heuristics), but allows a user to declare an existing inheritance relationship in the datamodel. For that, a type tag needs to be added, which can be done using provided tooling. 
+Introspection does not identify inheritance (in theory, it could with heuristics), but allows a user to declare an existing inheritance relationship in the datamodel. For that, a type tag needs to be added, which can be done using provided tooling.
 
 ## Migration Considerations
 
-For any form of inheritance, migrating away from a super/subtype relationship will move (and potentially duplicate!) a lot of data. 
+For any form of inheritance, migrating away from a super/subtype relationship will move (and potentially duplicate!) a lot of data.
 
 Migrating towards a class/subclass relationship is can be a difficult task if it's allowed to create a base types for two types simultaneously because of conflicts. Splitting a single type into super/subtype is less of a problem.
 
-## Client considerations 
+## Client considerations
 
-The prisma client needs to expose a way to distinguish between different subclasses for superclass queries. This can be done in a language-native way or with type tags.  
+The prisma client needs to expose a way to distinguish between different subclasses for superclass queries. This can be done in a language-native way or with type tags.
 
 > How does that work with querying?
 
 ## Impact on filters
 
-Filters on supertypes also include an is operator to check for a specific subtype. This is needed for relations that point to a supertype. 
+Filters on supertypes also include an is operator to check for a specific subtype. This is needed for relations that point to a supertype.
 
 When querying a specific subtype on top level, the appropriate sub type should be queried directly.
 
@@ -1156,7 +1372,7 @@ Constraints restrict updating data when the update would violate a certain condi
 
 ## Single field constraints
 
-The following is an excellent reading on [single field constraints](https://github.com/prisma/prisma/issues/728). Countless extensions, or even using a simple expression language is thinkable. 
+The following is an excellent reading on [single field constraints](https://github.com/prisma/prisma/issues/728). Countless extensions, or even using a simple expression language is thinkable.
 
 Example:
 
@@ -1170,13 +1386,11 @@ type Employee {
 }
 ```
 
-
-
 ## Multi field Constraints
 
-For declaring multi field constraints, a similar structure as with indexes (on type level) could be used. 
+For declaring multi field constraints, a similar structure as with indexes (on type level) could be used.
 
-Example: 
+Example:
 
 ```groovy
 type Employee {
@@ -1205,7 +1419,7 @@ type Employee {
 }
 ```
 
-> Task: 
+> Task:
 >
 > Map out what it would look like to have reusable named constraints. Maybe custom scalars?
 
@@ -1213,9 +1427,9 @@ type Employee {
 
 Interfaces operate similar to inheritance, although interfaces ONLY transfer
 
-* The field name
-* The field type
-* Field constraints
+- The field name
+- The field type
+- Field constraints
 
 To a base type.
 
@@ -1225,7 +1439,7 @@ Interfaces are not backed by the database and they do not change the API schema 
 
 In other words, Interfaces offer a guarantee that a subset of a certain type follows a certain schema.
 
-Interfaces can be declared using the `Interface` keyword and used using the `implements` clause: 
+Interfaces can be declared using the `Interface` keyword and used using the `implements` clause:
 
 ```groovy
 interface IDatabase {
