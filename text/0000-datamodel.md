@@ -2,14 +2,14 @@
 - RFC PR: (leave this empty)
 - Prisma Issue: (leave this empty)
 
-# Summary
+# Motivation
 
 This RFC proposes a new syntax for the Prisma Datamodel. Main focus areas:
 
 - Break from the existing GraphQL SDL syntax where it makes sense
 - Clearly separate responsibilities into two categories: Core Prisma primitives and Connector specific primitives
 
-# Basic example
+### Basic example
 
 This example illustrate many aspects of the proposed syntax:
 
@@ -63,21 +63,7 @@ model PostToCategory {
 }
 ```
 
-# Motivation
-
 # Detailed design
-
-# Drawbacks
-
-# Alternatives
-
-# Adoption strategy
-
-# How we teach this
-
-# Unresolved questions
-
-===
 
 ## Core Prisma primitives
 
@@ -170,7 +156,7 @@ There are two exceptions where indexes intersect with data modelling:
 - Most storage engines implement the _unique constraint_ as an index. Unique constraint is provided by Prisma core, and the connector can choose to create only a single index if both a index and unique constraint is present on a single field in the datamodel.
 - The concept of a _primary key_ is provided by Prisma Core (`@id`). Many storage engines implement the primary key using a special index (sometimes called clustered index or primary index) that organises the data on disk by that field, even if no index is specified separately. These connectors will allow you to configure the index used for the primary key separately using the connector specific index configuration.
 
-# Model
+## Model
 
 Use the keyword `model` instead of `type`
 
@@ -186,7 +172,7 @@ model User {
 }
 ```
 
-# Primitive types
+## Primitive types
 
 Prisma defines a set of core types that are awailable accross multiple conenctors. The primary purpose of primitive types is to make it easier to use a single datamodel wit different conenctors (For example Postgres in production and SQLlite for local testing.) Most connectors will map all primitive types directly to a type supported by the underlying storage engine, enabling fast queries and indexing.
 
@@ -210,7 +196,7 @@ enum SomeEnum {
 }
 ```
 
-# New primitive types
+## New primitive types
 
 Prisma 1.x lacks some primitive types. Other types are mapping to the wrong storage engine type.
 
@@ -313,7 +299,7 @@ For spatial types, two conventions are meaningful:
 >
 > Valid operations and filters need to be specified
 
-# Enum
+## Enum
 
 > Prisma currently uses a TEXT column to represent Enums
 
@@ -343,7 +329,7 @@ enum SomeEnum {
 }
 ```
 
-# Type specification
+## Type specification
 
 Prismas primitive types are implemented by all connectors. As such, they are often too coarce to express the full power of a connectors type system. It is possible to specify the exact type of a storage engine using type specification.
 A type specification is always scoped to a specific connector. If the datamodel is used with any other connector, it is ignored. It is possible to provide type specification for multiple different connectors in a single datamodel.
@@ -392,11 +378,11 @@ model User {
 >
 > Decide syntax above
 
-# Custom primitive types
+## Custom primitive types
 
 There are two distinct uses for custom primitive types. Users of Prisma can create a custom type to encapsulate constraints or other configuration in a reusable type. Implementers of connectors can declare primitive types that work only in the context of that connector.
 
-## User-defined primitive types
+### User-defined primitive types
 
 If you have a certain field configuration that is used in multiple places, it can be convenient to create a custom type instead of repeating the configuration. This also ensures that all uses are in sync.
 
@@ -421,7 +407,7 @@ model User {
 
 > A user-defined primitive type is a collection of field configurations that can be extended at place of use.
 
-## Connector-defined primitive types
+### Connector-defined primitive types
 
 When implementing a connector it might be necessary to augment Prisma with types that are not already part of the muilt in primitive types. For example, a legacy database might have a special string type that support emoji, but does not support indexing. The connector could introduce a new primitive type to expose this type:
 
@@ -443,7 +429,7 @@ Connector implementors can rely on Prisma for certain validations if they don't 
 type EmojiString = String @constraint(maxLength: 1000)
 ```
 
-## Connector-defined complex types
+### Connector-defined complex types
 
 A conenctor might also want to introduce a complex type. For example a custom connector for a legacy SOAP API could introduce a complex type that is transparently mapped to a bitmap:
 
@@ -458,7 +444,7 @@ type UserSettingBitmap = model @embeded {
 >
 > This needs to be mapped out in much greater detail
 
-# Directives
+## Directives
 
 ### Directive List
 
@@ -514,7 +500,7 @@ model User {
 >
 > 2. Consider if some directives would be better described with alternative syntax
 
-# Sequence/Generators
+## Sequence/Generators
 
 Sequences are needed for auto-generating value. I suggest extending the concept: For example, you might want the default value of a field to be the current date. I propose to call that concept a **generator**. A generator of appropriate type can be used as default value, independently of the look and feel of default values.
 
@@ -550,15 +536,15 @@ For a start, it might be better to just allow some pre-defined generators:
 
 `now()` - the current date and time
 
-# Relations
+## Relations
 
-There are three kinds of relations: 1-1, 1-m and m-n. In relational databases 1-1 and 1-m is modeled the same way, and there is no built-in support for m-n relations.
+There are three kinds of relations: `1-1`, `1-m` and `m-n`. In relational databases `1-1` and `1-m` is modeled the same way, and there is no built-in support for `m-n` relations.
 
 Prisma core provides explicit support for all 3 relation types and connectors must ensure that their guarantees are upheld:
 
-- _1-1_ The return value on both sides is a nullable single value. Prisma prevents accidentally storing multiple records in the relation. This is an improvement over the standard implementation in relational databases that model 1-1 and 1-m relations the same, relying on application code to uphold this constraint.
-- _1-m_ The return value on one side is a nullable single value, on the other side a list that might be empty.
-- _m-n_ The return value on both sides is a list that might be empty. This is an improvement over the standard implementation in relational databases that require the application developer to deal with implementation details such as an intermediate table / join table. In Prisma, each connector will implement this concept in the way that is most efficient on the given storage engine and expose an API that hides the implementation details.
+- `1-1` The return value on both sides is a nullable single value. Prisma prevents accidentally storing multiple records in the relation. This is an improvement over the standard implementation in relational databases that model 1-1 and 1-m relations the same, relying on application code to uphold this constraint.
+- `1-m` The return value on one side is a nullable single value, on the other side a list that might be empty.
+- `m-n` The return value on both sides is a list that might be empty. This is an improvement over the standard implementation in relational databases that require the application developer to deal with implementation details such as an intermediate table / join table. In Prisma, each connector will implement this concept in the way that is most efficient on the given storage engine and expose an API that hides the implementation details.
 
 ### 1-1
 
@@ -819,7 +805,7 @@ These Datamodels will map to the same database schema
 | ---------- |
 | id         |
 
-| **_BlogToWriter** |          |
+| **\_BlogToWriter** |          |
 | ------------------ | -------- |
 | blogId             | writerId |
 
@@ -853,16 +839,16 @@ model _BlogToWriter {
 ```
 
 | **Blog** |
-|----------|
-| id |
+| -------- |
+| id       |
 
 | **Writer** |
-|------------|
-| id |
+| ---------- |
+| id         |
 
-|**_BlogToWriter** | | |
-|-----------------|-|-|
-| blogId | writerId | becameWriterOn |
+| **\_BlogToWriter** |          |                |
+| ------------------ | -------- | -------------- |
+| blogId             | writerId | becameWriterOn |
 
 The extra field can be accessed as you would expect:
 
@@ -982,7 +968,6 @@ In a `m-n` relation there is no natural parent-child relationship. Therefore, ca
 
 The edge relation concept comes from property graphs, implemented in systems such as Neo4j and ArangoDB. An edge connects two nodes in the graph and can have extra properties. The Edge Relation extends the Prisma API to handle this concept without the use of a full model to represent the edge.
 
-
 **Implementation in wire protocol**
 
 ```groovy
@@ -1072,7 +1057,7 @@ const writers: Writer[] = await prisma.writers
   .findAll({ where: { blogs_all: { id_ne: "abba" }, blogs_relation_aggregate: { becameWriterOn_avg_gt: "2018"} } })
 ```
 
-# Index
+## Index
 
 SDL limits us to 1 instance of a specific directive, forcing us to add extra syntax:
 
@@ -1088,7 +1073,7 @@ type Post @indexes(value: [
 }
 ```
 
-## Alternatives
+### Alternatives
 
 For MDL, we can express indices via other meachnism:
 
@@ -1197,7 +1182,7 @@ Pro: Allows overlapping indices, allows typecheck
 
 Con: Declaration not "inside" model
 
-## Special Search Index
+### Special Search Index
 
 Full text/phrase/spatial search in its simplest form can be reduced to providing an index. For this, an optional `type` argument could be added to indices, to represent this indices.
 
@@ -1243,7 +1228,7 @@ For the fuzzy text index, it would be useful to also expose an order by field wh
 > Find further special inidices
 > Map out all index tuning settings and create common capability groupings between DBs
 
-# Ineritance
+## Ineritance
 
 Inheritance in this context describes the concept of sharing common fields between types that are conceptually related. While inheritance is well discussed and researched on a language level, we have to tie these concepts closely to database models and to introspection.
 
@@ -1261,7 +1246,7 @@ Also, inheritance has to be distinguished from **interfaces**. The concept is si
 >
 > Do we include discriminators or do we rely on native mechanisms, exposed by the client (like instanceof)?
 
-## Inheritance in Prisma
+### Inheritance in Prisma
 
 In the concept of prisma **inheritance** allows extending a type that is backed by the database by **inheriting** from it.
 
@@ -1305,7 +1290,7 @@ In the example above, `Dog` would inherit all fields from `Pet` and `LivingBeing
 
 When a prisma query for base type happens, all super types are taken into consideration. In other words, when quering all Pets, all cats and dogs are returned as well.
 
-## Inheritance in Relational DBs
+### Inheritance in Relational DBs
 
 Via **single table inheritance**: We simply have all base field and all fields from superclasses in the same table.
 
@@ -1333,7 +1318,7 @@ When introspecting, inheritance is never discovered, as there are no hints we co
 >
 > Map out the MDL syntax for supporting all inheritance types
 
-## Inheritance in Document DBs
+### Inheritance in Document DBs
 
 On Top Level, Document Databases can theoretically leverage the same approaches as Relational Databases. For embedded types, only **single table inheritance** is really feasible. In the context of document DBs, this means mixing all base and sub types inside the same collection or array. This will require a type tag on each object to function properly.
 
@@ -1343,25 +1328,25 @@ Prisma always stores super and sub types in the same collection, with a type tag
 
 Introspection does not identify inheritance (in theory, it could with heuristics), but allows a user to declare an existing inheritance relationship in the datamodel. For that, a type tag needs to be added, which can be done using provided tooling.
 
-## Migration Considerations
+### Migration Considerations
 
 For any form of inheritance, migrating away from a super/subtype relationship will move (and potentially duplicate!) a lot of data.
 
 Migrating towards a class/subclass relationship is can be a difficult task if it's allowed to create a base types for two types simultaneously because of conflicts. Splitting a single type into super/subtype is less of a problem.
 
-## Client considerations
+### Client considerations
 
 The prisma client needs to expose a way to distinguish between different subclasses for superclass queries. This can be done in a language-native way or with type tags.
 
 > How does that work with querying?
 
-## Impact on filters
+### Impact on filters
 
 Filters on supertypes also include an is operator to check for a specific subtype. This is needed for relations that point to a supertype.
 
 When querying a specific subtype on top level, the appropriate sub type should be queried directly.
 
-# Constraints
+## Constraints
 
 Constraints restrict updating data when the update would violate a certain condition. Constraints can be defined with multiple scopes:
 
@@ -1372,7 +1357,7 @@ Constraints restrict updating data when the update would violate a certain condi
 | All Values in Table    | x            | x           |
 | All Values in Database | x            | x           |
 
-## Single field constraints
+### Single field constraints
 
 The following is an excellent reading on [single field constraints](https://github.com/prisma/prisma/issues/728). Countless extensions, or even using a simple expression language is thinkable.
 
@@ -1388,7 +1373,7 @@ type Employee {
 }
 ```
 
-## Multi field Constraints
+### Multi field Constraints
 
 For declaring multi field constraints, a similar structure as with indexes (on type level) could be used.
 
@@ -1405,7 +1390,7 @@ type Employee {
 @constraint(expression: salary < bonus) // Custom constraint
 ```
 
-## Constraints that respect other values
+### Constraints that respect other values
 
 **Caution**: Constraints that respect other values in tables or the database are generally not supported natively by all databases.
 
@@ -1425,7 +1410,7 @@ type Employee {
 >
 > Map out what it would look like to have reusable named constraints. Maybe custom scalars?
 
-# Interfaces
+## Interfaces
 
 Interfaces operate similar to inheritance, although interfaces ONLY transfer
 
@@ -1467,6 +1452,16 @@ type Prisma implements IDatabase, IMessageQueue {
     capacity: Int!
 }
 ```
+
+# Drawbacks
+
+# Alternatives
+
+# Adoption strategy
+
+# How we teach this
+
+# Unresolved questions
 
 # Open Questions
 
