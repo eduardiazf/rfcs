@@ -973,6 +973,8 @@ model Writer {
 
 **m-n**
 
+In a `m-n` relation there is no natural parent-child relationship. Therefore, cascading deletes are not supported.
+
 ### Edge Relation
 
 > Note: The Edge Relation part of the spec is additive and will not be part of the initial release of Prisma 2
