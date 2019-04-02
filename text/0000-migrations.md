@@ -37,6 +37,97 @@ These are the main reasons we want to add migration files:
 - Being able to run arbitrary data migration scripts
 - Having SQL / other database native escape hatches to perform structural database changes which Prisma doesn't support yet
 
+# Terminology
+
+Assuming that the reader knows, what Prisma 1.x looks like, the following
+terms are new concepts which we introduce with this spec.
+
+## Migration
+
+When changing the datamodel of a Prisma project, we now have a new datamodel in the local filesystem, while the database and running Prisma instance don't know yet about this change. The action of applying this diff between the old datamodel and the new one is called "performing a migration".
+In other words, you could see the diff between two data models, that is going to be applied as a migration.
+While this is a concept that has been mostly hidden until now within Prisma 1.x, users of Prisma are going to be exposed to this concept.
+This allows more fine-grained control over how datamodel changes get applied in the database (migrated).
+
+## Declarative vs imperative migrations
+
+### Declarative migration
+
+An example for a declarative migration is this:
+You start with datamodel `A` and change it to datamodel `B`, while not providing the actual steps needed to achieve this change.
+The only thing you need to provide is the following:
+
+`Datamodel A`
+
+```graphql
+model User {
+  id: ID! @id
+  name: String
+}
+```
+
+`Datamodel B`
+
+```graphql
+model User {
+  id: ID! @id
+  name: String!
+}
+```
+
+In this example we made the `name` field required.
+The actual steps needed to achieve the change will be _inferred_ by Prisma.
+Therefore we can also talk about declarative migrations as **automatic migrations**.
+
+### Imperative migration
+
+In traditional migration systems as the one provided by [Active Record](https://edgeguides.rubyonrails.org/active_record_migrations.html), the actual change is instead expressed in an imperative manner:
+
+```ruby
+class ChangeUserName < ActiveRecord::Migration[5.0]
+  def change
+    reversible do |dir|
+      change_table :User do |t|
+        t.string :name, null: false
+      end
+    end
+  end
+end
+```
+
+With imperative migrations, the user needs to both calculate the "diff" in his head and write the needed actions down, which will result in the new schema.
+
+While in Prismas model the declarative datamodel is the source of truth for migrations, Active Record takes the imperative migrations as the source of truth for migrations.
+Therefore one can call the imperative migrations also **manual migrations**.
+
+## Migration Scripts
+
+While Prisma solves the 95% use-case with the automatic migrations based on the user changing the datamodel, there are cases, in which this is not a sufficient solution.
+One case could for example be, that I want to use a database primitive, which is not yet being supported by Prisma. In this case I would like to run a database native script, e.g. a SQL script.
+I might also want to use a SQL script which will run after the migration was successful to insert data.
+If the abstraction level of SQL is too low for me, having access to the Prisma Client would be very beneficial. Before introducing a `unique` constraint, I might for example run a TypeScript script, which makes sure, that there are no duplicates in the database.
+So both migration scripts with the favorite language as TypeScript, JavaScript or Go are possible, while we also support low-level database access in SQL and other database languages.
+
+## Migration Hook
+
+A migration hook is used to run migration scripts. The two possible hooks are "before" and "after". Prisma decides, which file to execute at which point in time based on a filename convention. If there e.g. is a `after.go` file in the migration folder, Prisma will execute that Go script after the migration of the datamodel was successful.
+
+## Datamodel Snapshots
+
+As mentioned in [Declarative migration](#how-does-naming-of-migrations-work), the user adjusts the `datamodel.prisma` file, which results in a new migration folder when running `prisma migrate`. In order for the migration engine to know which changes need to be applied, it needs a "copy" of the datamodel. As this "copy" describes the datamodel in a specific point in time, we also refer to it as a "snapshot".
+
+## Migration History
+
+When a migration is running or has been executed successfully, Prisma writes this information into a table or collection in the database.
+This table is also known as the "Migration History".
+It includes all successful and failed migrations of the specific Prisma Project.
+The benefits of storing this migration history are the following:
+
+- Prisma can make sure, that the local migrations are in sync with the databases migrations
+- Prisma can ensure, that migrations don't get run twice
+- Prisma can give an overview in a GUI interface about the currently running migration and migrations that already have been running
+- Prisma can rollback migrations when there has been an error
+
 # Detailed design
 
 As mentioned in the [basic example](#basic-example), a simple `prisma migrate` is needed to migrate the database and create a new migration.
@@ -192,7 +283,7 @@ Let's say Alice and Bob start developing in their own branches based on the foll
 
 ```graphql
 model User {
-  id: ID @id
+  id: ID! @id
   name: String
   address: String
 }
@@ -354,7 +445,7 @@ Both use-cases of hooks and conflicts need to be properly documented.
 
 # Unresolved questions
 
-- [ ] Summarize and describe new concepts and terminology
+- [x] Summarize and describe new concepts and terminology
 - [ ] Spec out the workflow of generating a migration
   - [ ] Generate client into `node_modules` (also consider versioning e.g. `npx prisma@2.x generate`)
 - [ ] Spec out how migration "hooks" are working (e.g. `before.up.sql`) as it's depending on individual connectors
