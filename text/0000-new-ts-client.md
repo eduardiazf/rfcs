@@ -377,6 +377,8 @@ prisma.users({
 
 - [ ] Rethink aggregations, group-by and "page info"
 - [ ] Error handling
+  - [ ] Define best practices for developers
+  - [ ] Define error codes
 - [ ] Connection management when used with embededded query engine
 - [ ] Non-CRUD API operations
 - [ ] Add support for revisioning API
