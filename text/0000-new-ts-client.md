@@ -375,6 +375,8 @@ prisma.users({
 
 # Unresolved questions
 
+- [ ] Rethink aggregations, group-by and "page info"
+- [ ] Error handling
 - [ ] Connection management when used with embededded query engine
 - [ ] Non-CRUD API operations
 - [ ] Add support for revisioning API
