@@ -142,8 +142,6 @@ prisma migrate                                Creates a migration, clears the dr
        migrate plan                           Creates a migration without applying it
        migrate apply                          Applies all unapplied migrations
        migrate discard                        Discard changes of the draft mode
-       migrate run-post-hook [migration]      Runs a specific post hook of a migration (Useful for implementing hooks)
-       migrate run-pre-hook [migration]       Runs a specific pre hook of a migration  (Useful for implementing hooks)
 ```
 
 Let's discuss a few questions.
