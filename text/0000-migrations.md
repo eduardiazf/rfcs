@@ -448,13 +448,13 @@ Both use-cases of hooks and conflicts need to be properly documented.
 - [x] Summarize and describe new concepts and terminology
 - [ ] Transaction behavior (also when running scripts)
 - [ ] Spec out how migration "hooks" are working (e.g. `before.up.sql`) as it's depending on individual connectors
-- [ ] Spec out the workflow of generating a migration
-  - [ ] Generate client into `node_modules` (also consider versioning e.g. `npx prisma@2.x generate`)
+- [x] Spec out the workflow of generating a migration
+  - [x] Generate client into `node_modules` (also consider versioning e.g. `npx prisma@2.x generate`)
+  - [x] Done - you can read the spec [here](https://github.com/prisma/rfcs/blob/client-generators/text/0000-client-generators.md#generating-the-client-into-node_modules)
 - [ ] Spec out CLI output of each migration related command
 - [ ] 3 migration modes (1. delete all data, 2. keep data + downtime, 3. keep data + zero downtime)
   - [ ] How to simplify renames for local development. Ideas:
     - `prisma dev`: interactive double list select?
     - Prisma Admin feature
-- [ ] Transaction behavior (also when running scripts)
 - [ ] How do migrations work from a SDK perspective
   - [ ] Is there a programmatic abstraction that works without files? (Might be needed for TypeGraphQL)
