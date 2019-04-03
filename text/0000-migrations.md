@@ -455,3 +455,6 @@ Both use-cases of hooks and conflicts need to be properly documented.
   - [ ] How to simplify renames for local development. Ideas:
     - `prisma dev`: interactive double list select?
     - Prisma Admin feature
+- [ ] Transaction behavior (also when running scripts)
+- [ ] How do migrations work from a SDK perspective
+  - [ ] Is there a programmatic abstraction that works without files? (Might be needed for TypeGraphQL)
