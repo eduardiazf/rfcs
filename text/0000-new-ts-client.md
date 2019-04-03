@@ -374,7 +374,7 @@ prisma.users({
 
 
 # Unresolved questions
-
+- [ ] Tool to deduplicate to introduce `unique`
 - [ ] Rethink aggregations, group-by and "page info"
 - [ ] Error handling
   - [ ] Define best practices for developers
