@@ -381,6 +381,7 @@ prisma.users({
   - [ ] Define error codes
 - [ ] Connection management when used with embededded query engine
 - [ ] Non-CRUD API operations
+- [ ] Where string filters should support case (in)sensitivity
 - [ ] Add support for revisioning API
 - [ ] Type mapping and static field preselection (see [comment in #4](https://github.com/prisma/rfcs/pull/4#issuecomment-471202364))
 - [ ] (Type-safe) raw field selection
