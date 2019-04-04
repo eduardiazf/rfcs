@@ -9,14 +9,14 @@ This RFC proposes a new syntax for the Prisma Datamodel. Main focus areas:
 - Break from the existing GraphQL SDL syntax where it makes sense
 - Clearly separate responsibilities into two categories: Core Prisma primitives and Connector specific primitives
 
-### Basic example
+## Basic example
 
 This example illustrate many aspects of the proposed syntax:
 
 ```groovy
 @db(name: "user")
 model User {
-  id: ID! @id
+  id: ID @id
   createdAt: DateTime @createdAt
   email: String @unique
   name: String?
@@ -63,9 +63,17 @@ model PostToCategory {
 }
 ```
 
-# Detailed design
 
-## Core Prisma primitives
+## Motivation for core/connector split
+
+Prisma core provides a set of data modelling primitives that are supported by most connectors.
+
+Connectors enable Prisma to work with a specific datastore. This can be a database, a file format or even a web service.
+
+- The primary job of a connector is to translate highher level Prisma concepts to lower level operations on the storage engine.
+- Secondary, connectors enable the Prisma user to take full advantage of the underlying storage engine by exposing performance tuning options and extra functionality that can not be accessed through the core Prisma primitives.
+
+**Core Prisma primitives**
 
 Prisma provides a set of core primitives:
 
@@ -77,7 +85,7 @@ Prisma provides a set of core primitives:
 - Constraints
 - ID / Primary Key
 
-## Connector specific primitives
+**Connector specific primitives**
 
 Connectors can additionally provide primitives specific to their underlying datastore
 
@@ -88,14 +96,7 @@ Connectors can additionally provide primitives specific to their underlying data
 - Indexes
 - Connector specific generators
 
-## Motivation for core/connector split
-
-Prisma core provides a set of data modelling primitives that are supported by most connectors.
-
-Connectors enable Prisma to work with a specific datastore. This can be a database, a file format or even a web service.
-
-- The primary job of a connector is to translate highher level Prisma concepts to lower level operations on the storage engine.
-- Secondary, connectors enable the Prisma user to take full advantage of the underlying storage engine by exposing performance tuning options and extra functionality that can not be accessed through the core Prisma primitives.
+The Prisma Datamodel provides primitives that describe the structure of your databases. Core Primitives are so fundamental that they map to most database types. Some primitives are there only to express some special feature in a single database. We call them Connector specific primitives. The following sections describe why each primitive is either core or connector specific.
 
 ### Types (String, Int, Float etc)
 
@@ -156,6 +157,8 @@ There are two exceptions where indexes intersect with data modelling:
 - Most storage engines implement the _unique constraint_ as an index. Unique constraint is provided by Prisma core, and the connector can choose to create only a single index if both a index and unique constraint is present on a single field in the datamodel.
 - The concept of a _primary key_ is provided by Prisma Core (`@id`). Many storage engines implement the primary key using a special index (sometimes called clustered index or primary index) that organises the data on disk by that field, even if no index is specified separately. These connectors will allow you to configure the index used for the primary key separately using the connector specific index configuration.
 
+# Detailed design
+
 ## Model
 
 Use the keyword `model` instead of `type`
@@ -172,9 +175,25 @@ model User {
 }
 ```
 
+## Embedded
+
+Use the keyword `embedded` instead of the directive `@embedded`
+
+```groovy
+type UserSettings @embedded {
+  receiveNewsletter: Boolean!
+}
+```
+
+```groovy
+embedded UserSettings {
+  receiveNewsletter: Boolean
+}
+```
+
 ## Primitive types
 
-Prisma defines a set of core types that are awailable accross multiple conenctors. The primary purpose of primitive types is to make it easier to use a single datamodel wit different conenctors (For example Postgres in production and SQLlite for local testing.) Most connectors will map all primitive types directly to a type supported by the underlying storage engine, enabling fast queries and indexing.
+Prisma defines a set of core types that are awailable accross multiple conenctors. The primary purpose of primitive types is to make it easier to use a single datamodel with different connectors (For example Postgres in production and SQLlite for local testing.) Most connectors will map all primitive types directly to a type supported by the underlying storage engine, enabling fast queries and indexing.
 
 > We considered making primitive types lowercase, but don't find this distinction useful
 
@@ -301,8 +320,6 @@ For spatial types, two conventions are meaningful:
 
 ## Enum
 
-> Prisma currently uses a TEXT column to represent Enums
-
 declaring and using an enum:
 
 ```groovy
@@ -316,11 +333,15 @@ enum SomeEnum {
 }
 ```
 
+The following table specifies how connectors will implement enums. Note that Prisma 1.x implements enums as a string, even when a dedicated ENUM type is available.
+
 | Prisma | MySQL | Elastic Search | MongoDB | PostgreS |
 | :----- | ----- | -------------- | ------- | -------- |
 | Enum   | ENUM  | text           | String  | ENUM     |
 
-> Prisma will store enums as strings containing the name of the enum value. In the future we could add a feature to specify an int representing the enum value similar to how protobuf specifies the order of fields. This new feature will be backwards compatible:
+### Ordered Enum values
+
+Connectors for databases without native support for enums will store enums as strings containing the name of the enum value. In the future we could add a feature to specify an int representing the enum value similar to how protobuf specifies the order of fields. This minimises space use and simplifies renaming of values. This new feature will be backwards compatible:
 
 ```groovy
 enum SomeEnum {
@@ -376,7 +397,7 @@ model User {
 
 > Task
 >
-> Decide syntax above
+> Decide on one of the syntax proposals above
 
 ## Custom primitive types
 
@@ -548,17 +569,17 @@ Prisma core provides explicit support for all 3 relation types and connectors mu
 
 ### 1-1
 
-A writer can have exactly 1 blog and a blog can have a single author:
+A writer can have exactly 1 blog and a blog must have a single author:
 
 ```groovy
 model Blog {
-  id: ID! @id
-  author: Writer
+  id: ID @id
+  author: Writer?
 }
 
 model Writer {
-  id: ID! @id
-  blog: Blog
+  id: ID @id
+  blog: Blog?
 }
 ```
 
@@ -578,39 +599,41 @@ Either side in a 1-1 relation can be made required:
 
 ```groovy
 model Blog {
-  id: ID! @id
-  author: Writer!
+  id: ID @id
+  author: Writer
 }
 
 model Writer {
-  id: ID! @id
+  id: ID @id
+  blog: Blog?
+}
+```
+
+```groovy
+model Blog {
+  id: ID @id
+  author: Writer?
+}
+
+model Writer {
+  id: ID @id
   blog: Blog
 }
 ```
 
 ```groovy
 model Blog {
-  id: ID! @id
+  id: ID @id
   author: Writer
 }
 
 model Writer {
-  id: ID! @id
-  blog: Blog!
+  id: ID @id
+  blog: Blog
 }
 ```
 
-```groovy
-model Blog {
-  id: ID! @id
-  author: Writer!
-}
-
-model Writer {
-  id: ID! @id
-  blog: Blog!
-}
-```
+When you are modeling a parent-child relationship it is comon for the parent to be required and the child to be optional. In this example a Blog might be required to have a Writer while a Writer can exist without a Blog.
 
 **Implicit relation field**
 
@@ -618,12 +641,12 @@ It is possible to specify only one relation field:
 
 ```groovy
 model Blog {
-  id: ID! @id
+  id: ID @id
   author: Writer
 }
 
 model Writer {
-  id: ID! @id
+  id: ID @id
 }
 ```
 
@@ -631,13 +654,13 @@ This will be interpreted as if there was an implicit optional relation field on 
 
 ```groovy
 model Blog {
-  id: ID! @id
+  id: ID @id
   author: Writer
 }
 
 model Writer {
-  id: ID! @id
-  blog: Blog
+  id: ID @id
+  blog: Blog?
 }
 ```
 
@@ -647,12 +670,12 @@ A writer can have multiple blogs
 
 ```groovy
 model Blog {
-  id: ID! @id
-  author: Writer
+  id: ID @id
+  author: Writer?
 }
 
 model Writer {
-  id: ID! @id
+  id: ID @id
   blogs: [Blog]
 }
 ```
@@ -675,17 +698,17 @@ The single element side in a 1-m relation can be marked required:
 
 ```groovy
 model Blog {
-  id: ID! @id
-  author: Writer!
+  id: ID @id
+  author: Writer
 }
 
 model Writer {
-  id: ID! @id
+  id: ID @id
   blog: [Blog]
 }
 ```
 
-The many field will either be an empty list or a non-empty list. It is not possible to mark it as required.
+The many field will either be an empty list or a non-empty list. There is no distinction between an optional and required many field.
 
 **Implicit relation field**
 
@@ -693,11 +716,11 @@ It is possible to specify only one relation field:
 
 ```groovy
 model Blog {
-  id: ID! @id
+  id: ID @id
 }
 
 model Writer {
-  id: ID! @id
+  id: ID @id
   blogs: [Blog]
 }
 ```
@@ -706,12 +729,12 @@ This will be interpreted as if there was an implicit optional single item relati
 
 ```groovy
 model Blog {
-  id: ID! @id
-  author: Writer
+  id: ID @id
+  author: Writer?
 }
 
 model Writer {
-  id: ID! @id
+  id: ID @id
   blogs: [Blog]
 }
 ```
@@ -752,7 +775,7 @@ Relations using a join table feel exactly like any other relation. The generated
 
 **required relations**
 
-m-n relations do not support the required constraint
+m-n relations makes no distinction between required or optional
 
 **Implicit relation field**
 
@@ -760,18 +783,18 @@ m-n relations do not support an implicit relation field
 
 ### Explicit join model
 
-The `1-1`, `1-m` and `m-n` relations are high-level constructs provided by Prisma and implemented by most connectors. Especially the `m-n` relation construct provided by Prisma selects a set of compromises that might not be appropriate for your case. You can gain more control over the implementation by using a concept familiar to users of relational databases: The join table. A flexible version of the `m-n` relations can be implemented using an extra model that acts as the join table and two `1-m` relations.
+The `1-1`, `1-m` and `m-n` relations are high-level constructs provided by Prisma and implemented by most connectors. Especially the `m-n` relation construct provided by Prisma selects a set of compromises that might not be appropriate for all cases. You can gain more control over the implementation by using a concept familiar to users of relational databases: The join table. A flexible version of the `m-n` relations can be implemented using an extra model that acts as the join table, and two `1-m` relations.
 
 This data model:
 
 ```groovy
 model Blog {
-  id: ID! @id
+  id: ID @id
   authors: [Writer]
 }
 
 model Writer {
-  id: ID! @id
+  id: ID @id
   blogs: [Blog]
 }
 ```
@@ -780,18 +803,18 @@ Can be represented like this:
 
 ```groovy
 model Blog {
-  id: ID! @id
+  id: ID @id
   authors: [_BlogToWriter]
 }
 
 model Writer {
-  id: ID! @id
+  id: ID @id
   blogs: [_BlogToWriter]
 }
 
 model _BlogToWriter {
-  author: Author!
-  blog: Blog!
+  author: Author
+  blog: Blog
 }
 ```
 
@@ -822,19 +845,19 @@ When the `m-n` relation is modeled with a explicit join model, it is possible to
 
 ```groovy
 model Blog {
-  id: ID! @id
+  id: ID @id
   authors: [_BlogToWriter]
 }
 
 model Writer {
-  id: ID! @id
+  id: ID @id
   blogs: [_BlogToWriter]
 }
 
 model _BlogToWriter {
-  becameWriterOn: DateTime!
-  author: Author!
-  blog: Blog!
+  becameWriterOn: DateTime
+  author: Author
+  blog: Blog
 }
 ```
 
@@ -862,13 +885,13 @@ If there are more than one relation between two types, the relation must be name
 
 ```groovy
 model Blog {
-  id: ID! @id
+  id: ID @id
   author: Writer @relation(name: "blogAuthor")
   sunscribers: [Writer] @relation(name: "blogSubscribers")
 }
 
 model Writer {
-  id: ID! @id
+  id: ID @id
   authorOf: [Blog] @relation(name: "blogAuthor")
   subscribedTo: [Blog] @relation(name: "blogSubscribers")
 
@@ -891,25 +914,25 @@ Cascading can be enabled on either side, but not both:
 
 ```groovy
 model Blog {
-  id: ID! @id
+  id: ID @id
   author: Writer @relation(onDelete: CASCADE)
 }
 
 model Writer {
-  id: ID! @id
-  blog: Blog
+  id: ID @id
+  blog: Blog?
 }
 ```
 
 ```groovy
 model Blog {
-  id: ID! @id
+  id: ID @id
   author: Writer
 }
 
 model Writer {
-  id: ID! @id
-  blog: Blog! @relation(onDelete: CASCADE)
+  id: ID @id
+  blog: Blog? @relation(onDelete: CASCADE)
 }
 ```
 
@@ -917,13 +940,13 @@ This would return an error:
 
 ```groovy
 model Blog {
-  id: ID! @id
-  author: Writer! @relation(onDelete: CASCADE)
+  id: ID @id
+  author: Writer @relation(onDelete: CASCADE)
 }
 
 model Writer {
-  id: ID! @id
-  blog: Blog! @relation(onDelete: CASCADE)
+  id: ID @id
+  blog: Blog? @relation(onDelete: CASCADE)
 }
 ```
 
@@ -933,13 +956,13 @@ Cascading can be enabled on the parent side only:
 
 ```groovy
 model Blog {
-  id: ID! @id
+  id: ID @id
   author: Writer
 }
 
 model Writer {
-  id: ID! @id
-  blogs: Blog! @relation(onDelete: CASCADE)
+  id: ID @id
+  blog: Blog? @relation(onDelete: CASCADE)
 }
 ```
 
@@ -947,13 +970,13 @@ This would return an error:
 
 ```groovy
 model Blog {
-  id: ID! @id
-  author: Writer! @relation(onDelete: CASCADE)
+  id: ID @id
+  author: Writer @relation(onDelete: CASCADE)
 }
 
 model Writer {
-  id: ID! @id
-  blogs: Blog!
+  id: ID @id
+  blog: Blog?
 }
 ```
 
@@ -1065,11 +1088,11 @@ SDL limits us to 1 instance of a specific directive, forcing us to add extra syn
 type Post @indexes(value: [
   { fields: ["published"] name: "Post_published_idx" }
 ]) {
-  id: ID! @id
-  title: String!
-  published: DateTime!
-  viewCount: Int!
-  author: User!
+  id: ID @id
+  title: String
+  published: DateTime
+  viewCount: Int
+  author: User
 }
 ```
 
@@ -1083,13 +1106,13 @@ Could introduce the concept of column groups, and allow indices on them:
 
 ```groovy
 type Post {
-  id: ID! @id
+  id: ID @id
   {
-     title: String!
-     published: DateTime!
+     title: String
+     published: DateTime
   } @index // An index.
-  viewCount: Int!
-  author: User!
+  viewCount: Int
+  author: User
 }
 ```
 
@@ -1097,13 +1120,13 @@ or easier to read:
 
 ```groovy
 type Post {
-  id: ID! @id
+  id: ID @id
   @index {
-     title: String!
-     published: DateTime!
+     title: String
+     published: DateTime
   }
-  viewCount: Int!
-  author: User!
+  viewCount: Int
+  author: User
 }
 ```
 
@@ -1117,14 +1140,14 @@ We could allow index declarations only on interfaces. These indices would be the
 
 ```groovy
 indexed interface PostSearchable @index {
-  title: String!
-  published: DateTime!
+  title: String
+  published: DateTime
 }
 
 type Post extends PostSearchable {
-  id: ID! @id
-  viewCount: Int!
-  author: User!
+  id: ID @id
+  viewCount: Int
+  author: User
 }
 ```
 
@@ -1138,11 +1161,11 @@ We could make indices named, so we can assign multiple fields to an index
 
 ```groovy
 type Post extends PostSearchable {
-  id: ID! @id
-  title: String! @index(name: 'SearchIndex')
-  published: DateTime! @index(name: 'SearchIndex')
-  viewCount: Int!
-  author: User!
+  id: ID @id
+  title: String @index(name: 'SearchIndex')
+  published: DateTime @index(name: 'SearchIndex')
+  viewCount: Int
+  author: User
 }
 ```
 
@@ -1156,11 +1179,11 @@ Like before
 
 ```groovy
 type Post {
-  id: ID! @id
-  title: String!
-  published: DateTime!
-  viewCount: Int!
-  author: User!
+  id: ID @id
+  title: String
+  published: DateTime
+  viewCount: Int
+  author: User
 }
 @index (fields: ["title", "published"] name: "Post_published_idx")
 ```
@@ -1169,11 +1192,11 @@ Or, dropping GraphQL restrictions (e.g. adding typecheck):
 
 ```groovy
 type Post {
-  id: ID! @id
-  title: String!
-  published: DateTime!
-  viewCount: Int!
-  author: User!
+  id: ID @id
+  title: String
+  published: DateTime
+  viewCount: Int
+  author: User
 }
 @index (fields: [.title, .published] name: "Post_published_idx")
 ```
@@ -1188,11 +1211,11 @@ Full text/phrase/spatial search in its simplest form can be reduced to providing
 
 ```groovy
 type Post {
-  id: ID! @id
-  title: String!
-  published: DateTime!
-  text: String!
-  author: User!
+  id: ID @id
+  title: String
+  published: DateTime
+  text: String
+  author: User
 }
 @index (fields: ["text", "title"] name: "Fuzzy_Text_Index", type: FuzzyFullText)
 @index (fields: ["text", "title"] name: "Text_Index", type: FullText)
@@ -1202,11 +1225,11 @@ An alterative would be a distinct `textIndex` directive which allows additional 
 
 ```groovy
 type Post {
-  id: ID! @id
-  title: String!
-  published: DateTime!
-  text: String!
-  author: User!
+  id: ID @id
+  title: String
+  published: DateTime
+  text: String
+  author: User
 }
 @fuzzyTextIndex(fields: ["text", "title"] name: "Text_Index", weight: [0.4, 0.6])
 ```
@@ -1264,25 +1287,25 @@ Inheritance in the datamodel is declared by an `extends` clause:
 
 ```groovy
 type LivingBeing {
-    dateOfBirth: DateTime! @createdAt = now()
+    dateOfBirth: DateTime @createdAt = now()
 }
 
 type Human extends LivingBeing {
-    firstName: String!
-    lastName: String!
+    firstName: String
+    lastName: String
 }
 
 type Pet extends LivingBeing {
-    nickname: String!
-    owner: Human!
+    nickname: String
+    owner: Human
 }
 
 type Cat extends Pet {
-    likesFish: Boolean!
+    likesFish: Boolean
 }
 
 type Dog extends Pet {
-    likesFrisbee: Boolean!
+    likesFrisbee: Boolean
 }
 ```
 
@@ -1365,11 +1388,11 @@ Example:
 
 ```groovy
 type Employee {
-    salary: Int!
-    bonus: Int!
-    firstName: String!
-    lastName: String!
-  	email: String! @constraint(regex: "(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+    salary: Int
+    bonus: Int
+    firstName: String
+    lastName: String
+  	email: String @constraint(regex: "(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
 }
 ```
 
@@ -1381,11 +1404,11 @@ Example:
 
 ```groovy
 type Employee {
-    salary: Int!
-    bonus: Int!
-    firstName: String!
-    lastName: String!
-  	email: String!
+    salary: Int
+    bonus: Int
+    firstName: String
+    lastName: String
+  	email: String
 }
 @constraint(expression: salary < bonus) // Custom constraint
 ```
@@ -1430,26 +1453,26 @@ Interfaces can be declared using the `Interface` keyword and used using the `imp
 
 ```groovy
 interface IDatabase {
-    storageSize: Int!
+    storageSize: Int
 }
 
 interface IMessageQueue {
-    capacity: Int!
+    capacity: Int
 }
 
 type Kafka implements IMessageQueue {
-    capacity: Int!
-    serverName: String!
+    capacity: Int
+    serverName: String
 }
 
 type PostGres implements IDatabase {
-    storageSize: Int!
-    serverName: String!
+    storageSize: Int
+    serverName: String
 }
 
 type Prisma implements IDatabase, IMessageQueue {
-    storageSize: Int!
-    capacity: Int!
+    storageSize: Int
+    capacity: Int
 }
 ```
 
