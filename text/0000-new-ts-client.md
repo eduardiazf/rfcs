@@ -406,6 +406,7 @@ prisma.users({
 - [ ] Silent mutations [prisma/prisma#4075](https://github.com/prisma/prisma/issues/4075)
 - [ ] Consider consistency and isolation levels
 - [ ] Data locality
+- [ ] Ensure the API differentiates between [`undefined` vs. `null` vs. `some value`](https://github.com/prisma/rfcs/pull/2#issuecomment-479822477)
 
 # Future topics
 
