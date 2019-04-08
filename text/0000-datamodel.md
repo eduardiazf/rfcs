@@ -63,7 +63,6 @@ model PostToCategory {
 }
 ```
 
-
 ## Motivation for core/connector split
 
 Prisma core provides a set of data modelling primitives that are supported by most connectors.
@@ -175,6 +174,24 @@ model User {
 }
 ```
 
+## Required and optional fields
+
+Default to required and use the modifier `?` for optional fields instead of defaulting to optional and using the modifier `!` for required fields.
+
+```groovy
+type User {
+  requiredString: String!
+  optionalString: String
+}
+```
+
+```groovy
+model User {
+  requiredString: String
+  optionalString: String?
+}
+```
+
 ## Embedded
 
 Use the keyword `embedded` instead of the directive `@embedded`
@@ -190,6 +207,21 @@ embedded UserSettings {
   receiveNewsletter: Boolean
 }
 ```
+
+Embbeded models can also be defined inline:
+
+```groovy
+model User {
+  settings: UserSettings {
+    receiveNewsletter: Boolean
+  }
+}
+```
+
+> TODO:
+>
+> - must inlined embeddeds be named?
+> - can named inlined embeddeds be used as normal embeddeds in otherr model definitions?
 
 ## Primitive types
 
@@ -395,9 +427,9 @@ model User {
 }
 ```
 
-> Task
+> TODO:
 >
-> Decide on one of the syntax proposals above
+> - decide on one of the syntax proposals above
 
 ## Custom primitive types
 
@@ -469,30 +501,30 @@ type UserSettingBitmap = model @embeded {
 
 ### Directive List
 
-[Datamodel v2](https://github.com/prisma/prisma/issues/3408) specifies the following directives. Some of them might become obsolete with the changes proposed in this document
+[Datamodel v1.1](https://github.com/prisma/prisma/issues/3408) specifies the following directives. Some of them might become obsolete with the changes proposed in this document
 
 #### Type Level
 
-1. `@db` - to map fields or types to underlying db objects with different names
-2. `@plural` - to force a certain plural for client schema generation
-3. `@linkTable` - to mark a table as intermediate table for relations
-4. `@embedded` - to mark a type as embedded, e.g. embedded into a field of another type when stored
-5. `@indexes` - to declare indexes on a type
-6. `@discriminator` - to declare a discriminator on a polymorphic type, e.g. a value to distinguish it from other types
+1. `@db` - to map fields or types to underlying db objects with different names. **@db is used only for this purpose. We would like to find a broader construct. Maybe it is connector specific: `@postgres(column: "myName")`. This would make datamodels that rely on renaming less portable, but it is a edge case feature anyway**
+2. `@plural` - to force a certain plural for client schema generation. **We are moving this to client generator configuration**
+3. `@linkTable` - to mark a table as intermediate table for relations. **This is superseded by explicit join model**
+4. `@embedded` - to mark a type as embedded, e.g. embedded into a field of another type when stored. **This is superseded by the embedded keyword**
+5. `@indexes` - to declare indexes on a type. **This is moved out of Prisma Core and is a responsibility of connectors**
+6. `@discriminator` - to declare a discriminator on a polymorphic type, e.g. a value to distinguish it from other types. **TODO: do we need this?**
 
 #### Field Level
 
-1. `@id` - marks the primary key/id
-2. `@createdAt` - marks a field as the special createdAt field
-3. `@updatedAt` - marks a field as the special updatedAt field
-4. `@default` - sets the default value of a field
+1. `@id` - marks the primary key/id **We keep this**
+2. `@createdAt` - marks a field as the special createdAt field. **This is superseded by the generator concept**
+3. `@updatedAt` - marks a field as the special updatedAt field. **This feature is being sunset**
+4. `@default` - sets the default value of a field. **This is superseded by the generator concept**
 5. `@db` - see above
-6. `@scalarList`
-7. `@constraint` - for single field db constraints
-8. `@sequence`
-9. `@immutable`
-10. `@relation`
-11. `@unique` - for single-field unique constraints
+6. `@scalarList` **TODO: We should probably have a default behavior. Connectors can then optionally allow to customise implementation strategies**
+7. `@constraint` - for single field db constraints. **We will keep this**
+8. `@sequence` **This is superseeded by the generator concept**
+9. `@immutable` **TODO: Research if we still need this**
+10. `@relation` **We keep this**
+11. `@unique` - for single-field unique constraints. **TODO: We probably keep this**
 
 #### Interface Level
 
@@ -521,41 +553,94 @@ model User {
 >
 > 2. Consider if some directives would be better described with alternative syntax
 
-## Sequence/Generators
+## Generators and default values
 
-Sequences are needed for auto-generating value. I suggest extending the concept: For example, you might want the default value of a field to be the current date. I propose to call that concept a **generator**. A generator of appropriate type can be used as default value, independently of the look and feel of default values.
+Default values can be specified as follows:
 
 ```groovy
-model Article {
-    articleId: Int = autoIncrement(1024)
-    timestamp: DateTime = now()
-    objectId: UUID = uuid()
+model User {
+  name: String = "Default name"
 }
 ```
 
-### Custom Generator
+When required fields have a default value, they become optional in creates.
 
-Creating custom sequences in MDL could look like this:
+### Literal generators
+
+The `"Default name"` part on the right side above is called a literal generator. It is a generator that always returns the same literal value. Literal generators are supported for all core primitive types:
+
+| Primitive type | Literal generator |
+| -------------- | ----------------- |
+| Int            | 1                 |
+| Float          | 1.1               |
+| Decimal        | 1.1               |
+| String         | "some text"       |
+| boolean        | true              |
+| datetime       | "2018"            |
+| enum           | SomeEnum          |
+| json           | '{"a":3}'         |
+
+> TODO:
+> - extract literals to separate section
+> - spec out literals for remaining primitive types such as binary and spatial
+
+### Dynamic generators
+
+Prisma core provides a set of dynamic generators that can be used as default values:
+
+- `uuid()` - generates a fresh UUID
+- `cuid()` - generates a fresh cuid
+- `randomInt(min, max)` - generates a random int in the specified range
+- `randomFloat(min, max)` - generates a random Float in the specified range
+- `now()` - current time
+
+Default values using a dynamic generator can be specified as follows:
 
 ```groovy
-generator MyPkSequence extends IntSequence(start: 100, increment: 10)
+model User {
+  createdAt: DateTime = now()
+}
 ```
 
-Such sequences can be shared across types as they are globally available.
+### Connector specific generators
 
-Custom sequences which only support increments are kind of useless, so we could allow arbitrary expressions for generating sequences later.
+Connectors can provide additional generators that rely on specific database primitives to work. For example, MySQL and Postgres connectors could provide the `autoIncrement` generator that uses the underlying `AUTO_INCREMENT` and `SERIAL` column modifiers respectively:
 
-### Pre-Defined Generators
+```groovy
+model User {
+  id: Int = autoIncrement
+}
+```
 
-For a start, it might be better to just allow some pre-defined generators:
+`SERIAL` In Postgres is a simplified version of the underlying `Sequence` construct. As such, a Postgress connector could additionally provide a `sequence` generator:
 
-`uuid()` - generates a fresh UUID
+> Note that MariaDB introduced support for `SEQUENCE` in 10.3 in 2018: https://jira.mariadb.org/browse/MDEV-10139
 
-`autoIncrement()` - generates an auto increment sequence for this specific field.
+```groovy
+sequence MyCustomSequence = Postgres.Sequence(start: 100, increment: 10)
 
-`autoIncrement(100)` - generates an auto increment sequence starting at 100 for this specific field.
+model User {
+  id: Int = MyCustomSequence
+}
+```
 
-`now()` - the current date and time
+> Note: Sequences are selfcontained objects in Postgres that can be referenced from multiple tables. As such, the Postgres connector needs to introduce a new typedeclaration `sequence`. Connectors should take extreme care when introducing a typedeclaration like that as it is not scoped to Postgres. Practical experience implementing the core connectors will show us how well this eorks in practice
+
+
+### Expression generators
+
+> Note: this section is experimental and might never be implemented in Prisma
+
+Prisma could support expressions in generators:
+
+```groovy
+model User {
+  name: String
+  age: Int
+  someRandomField: String = `${this.name} is ${this.age} years old`
+  ageInDays: Int = ${this.age * 365}
+}
+```
 
 ## Relations
 
@@ -593,7 +678,47 @@ Connectors for relational databases will implement this as two tables with a sin
 | ---------- |
 | id         |
 
-**required relations**
+**Specifying Relation id side**
+
+> TODO: we need to pick a syntax for deciding on what table should have the relation id. Below are some options.
+
+```groovy
+model Blog {
+  id: ID @id
+  author: Writer? @relation(storeId: true)
+}
+
+model Writer {
+  id: ID @id
+  blog: Blog?
+}
+```
+
+```groovy
+model Blog {
+  id: ID @id
+  author: Writer? @id
+}
+
+model Writer {
+  id: ID @id
+  blog: Blog?
+}
+```
+
+```groovy
+model Blog {
+  id: ID @id
+  author: Writer?
+}
+
+model Writer {
+  id: ID @id
+  blog: Blog? @relation(virtual: true)
+}
+```
+
+**Required relations**
 
 Either side in a 1-1 relation can be made required:
 
@@ -692,7 +817,7 @@ Connectors for relational databases will implement this as two tables with a sin
 
 The implementation in the relational database matches the 1-m semantics, and these are reflected in the exposed API.
 
-**required relations**
+**Required relations**
 
 The single element side in a 1-m relation can be marked required:
 
@@ -773,7 +898,7 @@ Connectors for relational databases will implement this as two data tables and a
 
 Relations using a join table feel exactly like any other relation. The generated client API is identical to that for the many side of a 1-m relation.
 
-**required relations**
+**Required relations**
 
 m-n relations makes no distinction between required or optional
 
