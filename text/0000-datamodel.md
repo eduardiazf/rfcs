@@ -119,7 +119,7 @@ The concept of relations is provided by Prisma core. Relations between models is
 
 ### Generators
 
-TBD
+Prisma core provides a set of connector agnostic generators. Additionally, conenctors can provide generators that take advantage of database specific capabilities such as Sequences in Postgres. 
 
 ### Constraints
 
