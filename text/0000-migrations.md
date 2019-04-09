@@ -425,7 +425,7 @@ Let's say that Alice had pushed 10 new migrations and the same for Bob, he also 
 This would be a very complicated situation to reason about.
 In order to circumvent this issue, we strongly advice users to do two things:
 
-1. New your migrations. This will help your team to understand what happened in there
+1. Name your migrations. This will help your team to understand what happened in there
 2. Group all your changes into as few migrations as possible. This way conflict resolution is way easier.
 
 In order to make "grouping" or accumulating multiple schema changes into one migration, we introduce the `prisma migrate draft` command.
