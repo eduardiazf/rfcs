@@ -417,6 +417,16 @@ model User {
   cashBalance: Decimal @postgres.type(numeric(precision = 30, scale = 60))
   props: Json @postgres.type(mediumtext)
 }
+
+# without .type
+model User {
+  age: Int @postgres.smallint
+  name: String @postgres.varchar(128)
+  id: ID @postgres.char(100)
+  height: Float @postgres.float4
+  cashBalance: Decimal @postgres.numeric(precision = 30, scale = 60)
+  props: Json @postgres.mediumtext
+}
 ```
 
 Type specifications for multiple connectors:
