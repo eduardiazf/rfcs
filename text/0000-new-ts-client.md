@@ -332,7 +332,7 @@ TODO
 
 TODO:
 
-- 2 (non-exlusive) approaches: Middleware (blocking) + Events (non-blocking)
+- 2 (non-exclusive) approaches: Middleware (blocking) + Events (non-blocking)
 
 ## API shortcuts
 
@@ -379,7 +379,7 @@ prisma.users({
 - [ ] Error handling
   - [ ] Define best practices for developers
   - [ ] Define error codes
-- [ ] Connection management when used with embededded query engine
+- [ ] Connection management when used with embedded query engine
 - [ ] Non-CRUD API operations
 - [ ] Where string filters should support case (in)sensitivity
 - [ ] Add support for revisioning API
