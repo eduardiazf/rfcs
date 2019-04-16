@@ -1636,6 +1636,7 @@ type Prisma implements IDatabase, IMessageQueue {
 - [x] Indices/Unique
 - [ ] Unnamed embeds
 - [ ] If we were a little more radical with the syntax, could we create something much better?
+- [ ] How to handle fields with arguments? (also related to connectors and clients)
 
 # Notes
 
