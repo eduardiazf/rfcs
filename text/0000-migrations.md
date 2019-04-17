@@ -1437,3 +1437,7 @@ export default migrate(m => [
 Systems like Rails follow this approach. This would make migrations easier to reason about and prevent inconsistent data state. For a big production application this would however not be acceptable. This is probably something the application developer should take care of, by turning the application into maintenance mode.
 
 ## How to generate a (type-safe) client for the exec operations?
+
+## Wow to detect ambiguous scenarios (e.g. rename)?
+
+Is there a CLI flow for renaming fields? What does that look like?
