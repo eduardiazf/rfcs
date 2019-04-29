@@ -4,13 +4,9 @@
 
 # Summary
 
-
 # Basic example
 
-
 # Motivation
-
-
 
 # Detailed design
 
@@ -75,7 +71,7 @@ async function main() {
   })
 
   // Where / filtering
-  await prisma.users({ where: { email: { contains: '@gmail.com' }}})
+  await prisma.users({ where: { email: { contains: '@gmail.com' } } })
 
   // Raw
   await prisma.users({
@@ -94,9 +90,7 @@ async function main() {
   })
 
   // Fluent API
-  const bobsPosts: Post[] = await prisma.users
-    .findOne('bobs-id')
-    .posts({ first: 50 })
+  const bobsPosts: Post[] = await prisma.users.findOne('bobs-id').posts({ first: 50 })
 
   // Select API
   const userWithPostsAndFriends: DynamicResult1 = await prisma.users.findOne({
@@ -123,9 +117,7 @@ async function main() {
     .$stream()
     .$withPageInfo()
 
-  prisma
-    .posts({ first: 10000 })
-    .$stream({ chunkSize: 100, fetchThreshold: 0.5 /*, tailable: true*/ })
+  prisma.posts({ first: 10000 }).$stream({ chunkSize: 100, fetchThreshold: 0.5 /*, tailable: true*/ })
 
   // Aggregations
   const dynamicResult2: DynamicResult2 = await prisma.users({
@@ -293,8 +285,8 @@ await user.create({
   role,
   email,
   posts: post.upsertByEmail({
-    title
-  })
+    title,
+  }),
 })
 ```
 
@@ -348,33 +340,29 @@ prisma.users({
   where: {
     id: ['id1', 'id2'], // instead of `_in` or `OR`
     email: { endsWith: '@gmail.com' },
-  }
+  },
 })
 
 prisma.users({
   where: {
     name: { contains: 'Bob' },
     email: { contains: ['prisma.io', 'gmail.com'] }, // instead of `_in` or `OR`
-  }
+  },
 })
 ```
 
 # Drawbacks
 
-
 # Alternatives
 
 - `$nested` API
 
-
 # Adoption strategy
-
 
 # How we teach this
 
-
 # Unresolved questions
-- [ ] Tool to deduplicate to introduce `unique`
+
 - [ ] Rethink aggregations, group-by and "page info"
 - [ ] Error handling
   - [ ] Define best practices for developers
@@ -411,4 +399,3 @@ prisma.users({
 # Future topics
 
 - [ ] Rails-like scopes (see [Sequelize](http://docs.sequelizejs.com/manual/tutorial/scopes.html))
-
