@@ -495,16 +495,9 @@ await prisma.disconnect()
 
 # Future topics
 
-- [ ] Add support for revisioning API
-
-- [ ] Type mapping and static field preselection (see [comment in #4](https://github.com/prisma/rfcs/pull/4#issuecomment-471202364))
-- [ ] Rails-like scopes (see [Sequelize](http://docs.sequelizejs.com/manual/tutorial/scopes.html))
-
-- [ ] Datomic-style API
-
-* [ ] Non-CRUD API operations
-* [ ] Real-time API (subscriptions/live queries)
-* [ ] Operation Expressions
+- [ ] Non-CRUD API operations
+- [ ] Real-time API (subscriptions/live queries)
+- [ ] Operation Expressions
   - [ ] API for atomic operations
   - [ ] Update(many) API to use existing values
-* [ ] Silent mutations [prisma/prisma#4075](https://github.com/prisma/prisma/issues/4075)
+- [ ] Silent mutations [prisma/prisma#4075](https://github.com/prisma/prisma/issues/4075)
