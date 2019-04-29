@@ -106,8 +106,6 @@ await prisma.users({ where: { email: { containsInsensitive: '@gmail.com' } } })
 // Exists
 await prisma.users.findOne({ where: { email: { containsInsensitive: '@gmail.com' } } }).$exists()
 
-// Raw
-
 // Fluent API
 const bobsPosts: Post[] = await prisma.users.findOne('bobs-id').posts({ first: 50 })
 
