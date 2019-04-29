@@ -468,6 +468,17 @@ prisma.users({
 })
 ```
 
+## Connection management
+
+```ts
+const prisma = new Prisma()
+await prisma.connect()
+
+await prisma.disconnect()
+```
+
+- TODO: Will credentials be passed in here?
+
 # Drawbacks
 
 # Alternatives
