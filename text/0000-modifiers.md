@@ -18,6 +18,7 @@ Modifiers are a way to adjust the generated Prisma Client.
 - Custom queries
 - Custom camelcase
 - Custom pluralization
+- Result decomposition (see [Massive.js](https://massivejs.org/docs/resultset-decomposition))
 
 # Detailed design
 
