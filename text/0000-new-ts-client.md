@@ -86,7 +86,7 @@ const john: User = await prisma.users.findOne({
 })
 
 // Get many nodes
-const allUsers: User[] = await prisma.users.findAll({ first: 100 })
+const allUsers: User[] = await prisma.users.findMany({ first: 100 })
 const allUsersShortcut: User[] = await prisma.users({ first: 100 })
 
 // Ordering
