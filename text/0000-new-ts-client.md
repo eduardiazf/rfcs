@@ -124,6 +124,20 @@ const userWithPostsAndFriends: DynamicResult1 = await prisma.users.findOne({
 })
 ```
 
+## Top level query API
+
+```ts
+const nestedResult = await prisma.query({
+  users: {
+    first: 100,
+    select: {
+      posts: { select: { comments: true } },
+      friends: true,
+    },
+  },
+})
+```
+
 ## Writing Data
 
 ```ts
@@ -351,19 +365,6 @@ const [u2, p2]: [User, Post] = await prisma.batch([
 await prisma.batch([m1, m2], { transaction: true })
 ```
 
-## Top level query API
-
-```ts
-const nestedResult = await prisma.query({
-  users: {
-    first: 100,
-    select: {
-      posts: { select: { comments: true } },
-      friends: true,
-    },
-  },
-})
-```
 
 ## Pagination / Streaming
 
