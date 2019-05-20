@@ -491,6 +491,8 @@ await prisma.disconnect()
 # Unresolved questions
 
 - [ ] Connection management when used with embedded query engine
+- [ ] Force indexes
+- [ ] Rethink raw API fallbacks
 
 # Future topics
 
